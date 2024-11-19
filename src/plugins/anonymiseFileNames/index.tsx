@@ -17,11 +17,13 @@
 */
 
 import { Upload } from "@api/MessageEvents";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, Settings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { Devs, EquicordDevs } from "@utils/constants";
+import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
+
+import { reverseExtensionMap } from "../../equicordplugins/fixFileExtensions/components";
 
 type AnonUpload = Upload & { anonymise?: boolean; };
 
@@ -39,11 +41,6 @@ const tarExtMatcher = /\.tar\.\w+$/;
 const settings = definePluginSettings({
     anonymiseByDefault: {
         description: "Whether to anonymise file names by default",
-        type: OptionType.BOOLEAN,
-        default: true,
-    },
-    fixOpusExtensions: {
-        description: "Whether to fix file extensions by default",
         type: OptionType.BOOLEAN,
         default: true,
     },
@@ -72,11 +69,11 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "AnonymiseFileNames",
-    authors: [Devs.fawn, EquicordDevs.thororen],
+    authors: [Devs.fawn],
     description: "Anonymise uploaded file names",
     patches: [
         {
-            find: "instantBatchUpload:function",
+            find: "instantBatchUpload:",
             replacement: {
                 match: /uploadFiles:(\i),/,
                 replace:
@@ -91,9 +88,9 @@ export default definePlugin({
             }
         },
         {
-            find: ".Messages.ATTACHMENT_UTILITIES_SPOILER",
+            find: "#{intl::ATTACHMENT_UTILITIES_SPOILER}",
             replacement: {
-                match: /(?<=children:\[)(?=.{10,80}tooltip:.{0,100}\i\.\i\.Messages\.ATTACHMENT_UTILITIES_SPOILER)/,
+                match: /(?<=children:\[)(?=.{10,80}tooltip:.{0,100}#{intl::ATTACHMENT_UTILITIES_SPOILER})/,
                 replace: "arguments[0].canEdit!==false?$self.renderIcon(arguments[0]):null,"
             },
         },
@@ -119,24 +116,16 @@ export default definePlugin({
     }, { noop: true }),
 
     anonymise(upload: AnonUpload) {
-        if ((upload.anonymise ?? settings.store.anonymiseByDefault) === false) return upload.filename;
 
         const file = upload.filename;
         const tarMatch = tarExtMatcher.exec(file);
         const extIdx = tarMatch?.index ?? file.lastIndexOf(".");
+        const fileName = extIdx !== -1 ? file.substring(0, extIdx) : "";
         let ext = extIdx !== -1 ? file.slice(extIdx) : "";
-        const matchList = [
-            ".ogv",
-            ".oga",
-            ".ogx",
-            ".ogm",
-            ".spx",
-            ".opus"
-        ];
-
-        if (settings.store.fixOpusExtensions && ext !== "ogg" && matchList.includes(ext)) {
-            ext = ".ogg";
+        if (Settings.plugins.FixFileExtensions.enabled) {
+            ext = reverseExtensionMap[ext] || ext;
         }
+        if ((upload.anonymise ?? settings.store.anonymiseByDefault) === false) return fileName + ext;
 
         switch (settings.store.method) {
             case Methods.Random:

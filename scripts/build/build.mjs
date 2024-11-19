@@ -23,12 +23,13 @@ import { readdir, writeFile } from "fs/promises";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
-import { BUILD_TIMESTAMP, commonOpts, exists, globPlugins, IS_DEV, IS_REPORTER, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, VERSION, watch } from "./common.mjs";
+import { BUILD_TIMESTAMP, commonOpts, exists, globPlugins, IS_DEV, IS_REPORTER, IS_COMPANION_TEST, IS_STANDALONE, IS_UPDATER_DISABLED, resolvePluginName, VERSION, watch } from "./common.mjs";
 
 const defines = {
     IS_STANDALONE: String(IS_STANDALONE),
     IS_DEV: String(IS_DEV),
     IS_REPORTER: String(IS_REPORTER),
+    IS_COMPANION_TEST: String(IS_COMPANION_TEST),
     IS_UPDATER_DISABLED: String(IS_UPDATER_DISABLED),
     IS_WEB: "false",
     IS_EXTENSION: "false",
@@ -186,6 +187,7 @@ await Promise.all([
         sourcemap,
         plugins: [
             globPlugins("vencordDesktop"),
+            globPlugins("equicordDesktop"),
             ...commonOpts.plugins
         ],
         define: {
@@ -214,7 +216,7 @@ await Promise.all([
         ...nodeCommonOpts,
         entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/main/index.ts")],
         outfile: "dist/equibop/main.js",
-        footer: { js: "//# sourceURL=EquicordMain\n" + sourceMapFooter("main") },
+        footer: { js: "//# sourceURL=VencordMain\n" + sourceMapFooter("main") },
         sourcemap,
         define: {
             ...defines,
@@ -233,7 +235,7 @@ await Promise.all([
         outfile: "dist/equibop/renderer.js",
         format: "iife",
         target: ["esnext"],
-        footer: { js: "//# sourceURL=EquicordRenderer\n" + sourceMapFooter("renderer") },
+        footer: { js: "//# sourceURL=VencordRenderer\n" + sourceMapFooter("renderer") },
         globalName: "Vencord",
         sourcemap,
         plugins: [
@@ -251,7 +253,7 @@ await Promise.all([
         ...nodeCommonOpts,
         entryPoints: [join(dirname(fileURLToPath(import.meta.url)), "../../src/preload.ts")],
         outfile: "dist/equibop/preload.js",
-        footer: { js: "//# sourceURL=EquicordPreload\n" + sourceMapFooter("preload") },
+        footer: { js: "//# sourceURL=VencordPreload\n" + sourceMapFooter("preload") },
         sourcemap,
         define: {
             ...defines,

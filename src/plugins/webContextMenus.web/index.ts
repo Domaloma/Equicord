@@ -31,6 +31,18 @@ async function fetchImage(url: string) {
     return await res.blob();
 }
 
+let result;
+switch (true) {
+    case IS_VESKTOP:
+    case IS_EQUIBOP:
+    case "legcord" in window:
+    case "goofcord" in window:
+        result = true;
+        break;
+    default:
+        result = false;
+}
+
 
 const settings = definePluginSettings({
     // This needs to be all in one setting because to enable any of these, we need to make Discord use their desktop context
@@ -40,7 +52,7 @@ const settings = definePluginSettings({
         description: "Add back the Discord context menus for images, links and the chat input bar",
         // Web slate menu has proper spellcheck suggestions and image context menu is also pretty good,
         // so disable this by default. Vesktop just doesn't, so enable by default
-        default: IS_VESKTOP && !IS_EQUIBOP || !IS_VESKTOP && IS_EQUIBOP,
+        default: result,
         restartNeeded: true
     }
 });
@@ -72,7 +84,7 @@ export default definePlugin({
     description: "Re-adds context menus missing in the web version of Discord: Links & Images (Copy/Open Link/Image), Text Area (Copy, Cut, Paste, SpellCheck)",
     authors: [Devs.Ven],
     enabledByDefault: true,
-    required: IS_VESKTOP || IS_EQUIBOP,
+    required: result,
 
     settings,
 
@@ -126,11 +138,11 @@ export default definePlugin({
                     replace: "return [true"
                 },
                 {
-                    match: /(?<=COPY_IMAGE_MENU_ITEM,)action:/,
+                    match: /(?<=#{intl::COPY_IMAGE_MENU_ITEM}\),)action:/,
                     replace: "action:()=>$self.copyImage(arguments[0]),oldAction:"
                 },
                 {
-                    match: /(?<=SAVE_IMAGE_MENU_ITEM,)action:/,
+                    match: /(?<=#{intl::SAVE_IMAGE_MENU_ITEM}\),)action:/,
                     replace: "action:()=>$self.saveImage(arguments[0]),oldAction:"
                 },
             ]
@@ -201,14 +213,14 @@ export default definePlugin({
             }
         },
         {
-            find: ".Messages.SEARCH_WITH_GOOGLE",
+            find: "#{intl::SEARCH_WITH_GOOGLE}",
             replacement: {
                 match: /\i\.isPlatformEmbedded/,
                 replace: "true"
             }
         },
         {
-            find: ".Messages.COPY,hint:",
+            find: "#{intl::COPY}),hint:",
             replacement: [
                 {
                     match: /\i\.isPlatformEmbedded/,
@@ -222,7 +234,8 @@ export default definePlugin({
         // Automod add filter words
         {
             find: '("interactionUsernameProfile',
-            replacement: {
+            replacement:
+            {
                 match: /\i\.isPlatformEmbedded(?=.{0,50}\.tagName)/,
                 replace: "true"
             },

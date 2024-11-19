@@ -37,8 +37,8 @@ export default definePlugin({
             find: 'type:"IDLE",idle:',
             replacement: [
                 {
-                    match: /(?<=Date\.now\(\)-\i>)\i\.\i/,
-                    replace: "$self.getIdleTimeout()"
+                    match: /(?<=Date\.now\(\)-\i>)\i\.\i\|\|/,
+                    replace: "$self.getIdleTimeout()||"
                 },
                 {
                     match: /Math\.min\((\i\.\i\.getSetting\(\)\*\i\.\i\.\i\.SECOND),\i\.\i\)/,
@@ -84,7 +84,8 @@ export default definePlugin({
         });
     },
 
-    getIdleTimeout() { // milliseconds, default is 6e5
+    getIdleTimeout() {
+        // milliseconds, default is 6e5
         const { idleTimeout } = settings.store;
         return idleTimeout === 0 ? Infinity : idleTimeout * 60000;
     }

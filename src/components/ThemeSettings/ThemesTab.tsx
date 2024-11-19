@@ -211,7 +211,7 @@ function ThemesTab() {
         for (const { fileName, content } of themes) {
             if (!fileName.endsWith(".css")) continue;
 
-            if ((!IS_WEB || "armcord" in window) && fileName.endsWith(".user.css")) {
+            if ((!IS_WEB || "legcord" in window) && fileName.endsWith(".user.css")) {
                 // handle it as usercss
                 const header = await usercssParse(content, fileName);
 
@@ -446,7 +446,10 @@ function ThemesTab() {
                                 key={rawLink.fileName}
                                 enabled={settings.enabledThemeLinks.includes(rawLink.link)}
                                 onChange={enabled => onThemeLinkEnabledChange(rawLink.link, enabled)}
-                                onDelete={() => deleteThemeLink(rawLink.link)}
+                                onDelete={async () => {
+                                    onThemeLinkEnabledChange(rawLink.link, false);
+                                    deleteThemeLink(rawLink.link);
+                                }}
                                 showDeleteButton
                                 theme={rawLink}
                             />;

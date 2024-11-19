@@ -47,7 +47,7 @@ export default definePlugin({
         {
             find: ".COLLECTIBLES_SHOP_FULLSCREEN))",
             replacement: {
-                match: /(\?void 0:(\i)\.channelId.{0,120})\i\.Fragment,{/,
+                match: /(\?void 0:(\i)\.channelId.{0,200})\i\.Fragment,{/,
                 replace: "$1$self.render,{currentChannel:$2,"
             }
         },
@@ -79,7 +79,7 @@ export default definePlugin({
         {
             find: ".messagesPopoutWrap",
             replacement: {
-                match: /\i&&\((\i).maxHeight-=\d{1,3}\)/,
+                match: /\i&&\((\i).maxHeight.{0,5}\)/,
                 replace: "$&;$1.maxHeight-=$self.containerHeight"
             }
         },

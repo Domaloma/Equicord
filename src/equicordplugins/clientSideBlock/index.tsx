@@ -167,7 +167,7 @@ export default definePlugin({
         },
         // "1 blocked message"
         {
-            find: "Messages.BLOCKED_MESSAGES_HIDE.format",
+            find: "#{intl::BLOCKED_MESSAGES_HIDE}",
             replacement: {
                 match: /\i.memo\(function\(\i\){/,
                 replace: "$&return null;"
@@ -189,8 +189,8 @@ export default definePlugin({
             find: "PrivateChannel.renderAvatar",
             replacement: {
                 // horror but it works
-                match: /function\(\i,(\i),\i\){.*,\[\i,\i,\i\]\);/,
-                replace: "$&if($1.rawRecipients[0] != null){if($1.rawRecipients[0].id != null){if($self.shouldHideUser($1.rawRecipients[0].id)) return null;}}"
+                match: /(function\(\i,(\i),\i\){.*)(return \i\.isMultiUserDM\(\))/,
+                replace: "$1if($2.rawRecipients[0] != null){if($2.rawRecipients[0].id != null){if($self.shouldHideUser($2.rawRecipients[0].id)) return null;}}$3"
             }
         },
 
@@ -216,7 +216,7 @@ export default definePlugin({
         {
             find: "}getMutualFriends(",
             replacement: {
-                match: /(getMutualFriends\(\i\){)return (\i\[\i\])/,
+                match: /(getMutualFriends\(\i\){)return (\i\.get\(\i\))/,
                 replace: "$1if($2 != undefined) return $2.filter(u => !$self.shouldHideUser(u.key))"
             }
         }
